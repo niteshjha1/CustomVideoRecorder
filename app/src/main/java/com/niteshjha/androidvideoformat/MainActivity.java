@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         {
             if(!mediaStorageDir.mkdirs())
             {
-                Log.d("KarmaCam","Failed to create directory");
+                Log.d("Video_Format","Failed to create directory");
                 return null;
             }
         }
