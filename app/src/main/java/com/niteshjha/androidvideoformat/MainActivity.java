@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
+import nl.bravobit.ffmpeg.FFmpeg;
+
+import static android.os.Environment.getExternalStoragePublicDirectory;
+
 public class MainActivity extends AppCompatActivity {
 
     SurfaceView sView;
@@ -90,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
     public void stop(View view) {
 
         recorder.stop();
+        addFastStart();
     }
     private File getOutputMediaFile()
     {
@@ -117,5 +123,55 @@ public class MainActivity extends AppCompatActivity {
         //return Uri.fromFile(file);
 
     }
+
+    public void addFastStart() {
+
+        if (FFmpeg.getInstance(this).isSupported()) {
+            Log.d("Video_format","FFMPEG Available ");
+            // ffmpeg is supported
+        } else {
+            Log.i("Video_format","FFMPEG NOT Available ");
+            // ffmpeg is not supported
+        }
+
+        FFmpeg ffmpeg = FFmpeg.getInstance(this);
+
+        String input = getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +  "/video.mp4";
+//        String input = getOutputMediaFile().getPath();
+
+        String output =   new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/moov_output" + Long.toString(System.currentTimeMillis())+ ".mp4").getPath();
+
+        String[] cmd = {"-i", input, "-movflags", "+faststart", output };
+
+        Log.i("Video_format_onStart"," cmd check " + cmd.toString());
+        ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
+
+            @Override
+            public void onStart() {
+                Log.i("Video_format_onStart"," cmd " + cmd.toString());
+            }
+
+            @Override
+            public void onProgress(String message) {
+                Log.i("Video_format_onProgress",  message);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log.i("Video_format_onFailure"," onFailure " + message);
+            }
+
+            @Override
+            public void onSuccess(String message) {
+                Log.i("Video_format_onSuccess"," OnSuccess " + message);
+            }
+
+            @Override
+            public void onFinish() {
+                Log.i("Video_format_onFinish"," It is finished " );
+            }
+        });
+    }
+
 
 }
