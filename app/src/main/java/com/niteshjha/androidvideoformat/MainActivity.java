@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.media.CamcorderProfile;
-import android.media.MediaDataSource;
+import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,6 +14,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
     Button startButton;
 
+    String name = Long.toString(System.currentTimeMillis());
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,41 +45,42 @@ public class MainActivity extends AppCompatActivity {
         Button startButton = findViewById(R.id.button_record);
 
         sView = (SurfaceView) findViewById(R.id.surfaceView1);
+
         recorder = new MediaRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-        recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+
+        recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
         // Video settings
         recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
+//        camera.setDisplayOrientation(90);
+        recorder.setOrientationHint(90);
+
         // Audio settings
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-
+//
         // Output format
-//        recorder.setOutputFile(getOutputMediaFile().getPath());
-        recorder.setOutputFile(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/video.mp4");
+        recorder.setOutputFile(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4");
+        Log.i("Video_format_recordedF-file","OUTPUT OF VIDEO RECORDER" + getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4");
 
         sHolder = sView.getHolder();
 
         sHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-
                 recorder.setPreviewDisplay(surfaceHolder.getSurface());
             }
 
             @Override
             public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
             }
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-
             }
         });
-
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,18 +94,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     public void stop(View view) {
-
         recorder.stop();
         addFastStart();
+        Toast.makeText(MainActivity.this, getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4",Toast.LENGTH_LONG).show();
     }
+
     private File getOutputMediaFile()
     {
         File mediaStorageDir = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + File.separator);
-
-
+                getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + File.separator);
 
         File[] files =mediaStorageDir.listFiles();
 
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         {
             if(!mediaStorageDir.mkdirs())
             {
-                Log.d("Video_Format","Failed to create directory");
+                Log.d("Video_format","Failed to create directory");
                 return null;
             }
         }
@@ -119,10 +119,13 @@ public class MainActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File file = new File(mediaStorageDir.getPath() + File.separator+ "VID_"+timeStamp+".mp4");
 
-        return file;
-        //Log.d("recorder_location", file.getAbsolutePath());
-        //return Uri.fromFile(file);
+        Log.d("recorder_location", file.getAbsolutePath());
 
+        Log.d("recorder_location", file.getAbsolutePath());
+
+        String fileM =  file.getAbsolutePath();
+
+        return file;
     }
 
     public void addFastStart() {
@@ -137,14 +140,15 @@ public class MainActivity extends AppCompatActivity {
 
         FFmpeg ffmpeg = FFmpeg.getInstance(this);
 
-        String input = getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +  "/video.mp4";
-//        String input = getOutputMediaFile().getPath();
+        String input = getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4";
+        Log.i("Video_format_recordedF-file"," INPUT TO FFMPEG" + input);
 
-        String output =   new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/moov_output" + Long.toString(System.currentTimeMillis())+ ".mp4").getPath();
+//        String input = getOutputMediaFile().getAbsoluteFile().toString();
+
+        String output =   new File(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/moov_" + (System.currentTimeMillis())+ ".mp4").getPath();
 
         String[] cmd = {"-i", input, "-movflags", "+faststart", output };
 
-        Log.i("Video_format_onStart"," cmd check " + cmd.toString());
         ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
 
             @Override
@@ -170,9 +174,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 Log.i("Video_format_onFinish"," It is finished " );
+                Toast.makeText(MainActivity.this, "Saved to : " + output,Toast.LENGTH_LONG).show();
             }
         });
     }
-
-
 }
