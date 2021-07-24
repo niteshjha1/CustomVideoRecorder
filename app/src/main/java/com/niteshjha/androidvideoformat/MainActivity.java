@@ -56,7 +56,8 @@ public class MainActivity extends AppCompatActivity {
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
         // Output format
-        recorder.setOutputFile(getOutputMediaFile().getPath());
+//        recorder.setOutputFile(getOutputMediaFile().getPath());
+        recorder.setOutputFile(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/video.mp4");
 
         sHolder = sView.getHolder();
 
