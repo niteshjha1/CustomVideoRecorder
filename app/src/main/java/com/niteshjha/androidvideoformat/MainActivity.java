@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                     ActivityCompat.requestPermissions(MainActivity.this, permissions, ALL_PERMISSIONS);
                 }
 
-
             }
         });
 
@@ -72,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, RecordActivity.class);
 
                 startActivity(intent);
+                finish();
 
             }
         });

@@ -37,6 +37,8 @@ public class RecordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_record);
 
         Button startButton = findViewById(R.id.button_record);
+        Button stopButton = findViewById(R.id.button_stop);
+        stopButton.setEnabled(false);
 
         sView = (SurfaceView) findViewById(R.id.surfaceView1);
 
@@ -49,12 +51,12 @@ public class RecordActivity extends AppCompatActivity {
         recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-//        camera.setDisplayOrientation(90);
+        // Camera.setDisplayOrientation(90);
         recorder.setOrientationHint(90);
 
         // Audio settings
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-//
+
         // Output format
         recorder.setOutputFile(getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4");
         Log.i("Video_format_recordedF-file","OUTPUT OF VIDEO RECORDER" + getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4");
@@ -80,18 +82,27 @@ public class RecordActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 try {
+                    startButton.setEnabled(false);
+
                     recorder.prepare();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 recorder.start();
+                stopButton.setEnabled(true);
             }
         });
-    }
-    public void stop(View view) {
-        recorder.stop();
-        addFastStart();
-        Toast.makeText(RecordActivity.this, getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + name + ".mp4",Toast.LENGTH_LONG).show();
+
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                startButton.setEnabled(true);
+                recorder.stop();
+                addFastStart();
+            }
+        });
     }
 
     public void addFastStart() {
